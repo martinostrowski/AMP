@@ -38,6 +38,8 @@ Ideally the gene abundances would be calculated with the exact same methods as t
 
 Annotation sources include: best hit and LCA taxonomic assignment against nt, COG/NOG, GO-slim, nr, Interproscan. (Searches against Datbases in bold have been done). The others are not implemented.
 
+***
+
 ### 2 SUPER-FOCUS functional characterisation -short term functional classification and enumeration against the SEED database
 
 Discussion: can be implemented quickly. Hierarchal organisation of functional classes at 4 levels. Raw or Filtered reads (Fastq or Fasta) can be analysed
@@ -54,7 +56,9 @@ Can be used to produce rapid results. A curated RGC with defined read mapping cr
 
 regional coassemblies with metadata file (length, LCA, coverage)
 
-B. Regional Assembled Genome bins with metadata (length, LCA, coverage, method of binning, contamination, completeness)
+***
+
+### B. Regional Assembled Genome bins with metadata (length, LCA, coverage, method of binning, contamination, completeness)
 
 	i). Bacterial bins
 	ii) Archaeal bins
@@ -75,13 +79,13 @@ B. Regional Assembled Genome bins with metadata (length, LCA, coverage, method o
 
 #### Format: ideally a bioproject on one of the database sites
 
- 
+***
 
 # Priorities
 
 Test the complete workflow on datasets that are a priority for the community
 
-YON
-GAB
-EAC - Amaranta MQ
-Entire dataset - assembled contigs
+- YON
+- GAB
+- EAC - Amaranta MQ
+-  Entire dataset - assembled contigs
