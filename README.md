@@ -40,7 +40,7 @@ Annotation sources include: best hit and LCA taxonomic assignment against nt, CO
 
 ***
 
-### 2 SUPER-FOCUS functional characterisation -short term functional classification and enumeration against the SEED database
+### 2. SUPER-FOCUS functional characterisation -short term functional classification and enumeration against the SEED database
 
 Discussion: can be implemented quickly. Hierarchal organisation of functional classes at 4 levels. Raw or Filtered reads (Fastq or Fasta) can be analysed
 
@@ -52,13 +52,13 @@ Can be used to produce rapid results. A curated RGC with defined read mapping cr
 
 - SUPER-FOCUS
 
-###3.  Metagenome Assembled Genomes (MAGs)
+### 3.  Metagenome Assembled Genomes (MAGs)
 
-regional coassemblies with metadata file (length, LCA, coverage)
+- A. Regional coassemblies with metadata file (length, LCA, coverage)
 
-***
 
-### B. Regional Assembled Genome bins with metadata (length, LCA, coverage, method of binning, contamination, completeness)
+
+- B. Regional Assembled Genome bins with metadata (length, LCA, coverage, method of binning, contamination, completeness)
 
 	i). Bacterial bins
 	ii) Archaeal bins
