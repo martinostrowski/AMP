@@ -1,3 +1,6 @@
+
+### preliminary version -do not use: 2016
+
 Here is a full set of processes used to prep the metagenome data. version 11 October 2016
 
 ## merge lanes and rename to contextually relevant IDs e.g. [full list appended]
