@@ -18,12 +18,12 @@ D. contigs assembled for each discrete sample, with Taxonomic assignment
 E. Predicted gene sequences and protein sequences (fasta files)
 
 #### Tools
-Trimmomatic
-Fastqc
-Spades/megahit
-metagenemark
-cd-hit
-basta
+- Trimmomatic
+- Fastqc
+- Spades/megahit
+- metagenemark
+- cd-hit
+- basta
 
 see AMRGC_Readme.txt for a starting point.
 see metagenome workflow for details on the assembly and read mapping
@@ -44,11 +44,11 @@ Discussion: can be implemented quickly. Hierarchal organisation of functional cl
 
 Can be used to produce rapid results. A curated RGC with defined read mapping criteria and inter comparison with global datasets is preferred.
 
-#### A. a table of results for all levels and all samples. See “output_all_levels_and_functions.xls”
+- A. a table of results for all levels and all samples. See “output_all_levels_and_functions.xls”
 
 #### Tools
 
-SUPER-FOCUS
+- SUPER-FOCUS
 
 ###3.  Metagenome Assembled Genomes (MAGs)
 
@@ -63,17 +63,17 @@ B. Regional Assembled Genome bins with metadata (length, LCA, coverage, method o
 
 #### Tools
 
-bowtie2
-samtools 
-MetaBat 
-GroopM
-Basta
-contig assembler (Geneious, CAP3 etc.)
-CheckM
+- bowtie2
+- samtools 
+- MetaBat 
+- GroopM
+- Basta
+- contig assembler (Geneious, CAP3 etc.)
+- CheckM
 
 #### Discussion: Some optimisation may be required to maximise the completeness and reduce contamination during the binning process.
 
-Format: ideally a bioproject on one of the database sites
+#### Format: ideally a bioproject on one of the database sites
 
  
 
