@@ -19,22 +19,22 @@ cat IN2015_v03.022.cmaxm.ru.fq | awk 'NR % 4 == 1 {sub(/^@/,"@IN2015_v03.022.cma
 
 ## interleave paired ends, anticipating making it easier for some assemblers. (##not needed for megahit)
 
-##python ~/bin/interleave_fastq.py ss2010_v09.031.0m_101.fpr.fq ss2010_v09.031.0m_101.rpr.fq > ss2010_v09.031.0m_101.ipr.fq; 
+## python ~/bin/interleave_fastq.py ss2010_v09.031.0m_101.fpr.fq ss2010_v09.031.0m_101.rpr.fq > ss2010_v09.031.0m_101.ipr.fq; 
 
 ## run megahit assembler on each sample, ask for min contig length of 500
 
 ~/megahit/megahit --min-contig-len 500 --12 ss2010_v09.064.32m_207.ipr.fq -r ss2010_v09.064.32m_207.fur.fq,ss2010_v09.064.32m_207.rur.fq -o ss2010_v09.064.32m_207
 
-##predict genes on > 500 bp contigs using Metagenemrak
+## predict genes on > 500 bp contigs using Metagenemrak
 
 ~/MetaGeneMark_linux_64/mgm/gmhmmp -a -d -f G -m ~/MetaGeneMark_linux_64/mgm/MetaGeneMark_v1.mod ss2010_v09.031.0m_101/final.contigs.fa.500.fasta -o ss2010_v09.031.0m_101/ss2010_v09.031.0m_101.gff -D ss2010_v09.031.0m_101/ss2010_v09.031.0m_101.orfs.nt;
 
-##cluster all predicted orfs to generate a reference set of genes sequences (RGC) at 95% nucleotide identity
+## cluster all predicted orfs to generate a reference set of genes sequences (RGC) at 95% nucleotide identity
 
 cd-hit-est -c 0.95 -T 12 -M 0 -G 0 -aS 0.9 -g 1 -r 1 -d 0 -i ss2010.v09.orfs.nt -o ss2010.v09.orfs_
 
 
-##perl script to rename seqs so they are all unique. (Would be nice to keep gene length information)
+## perl script to rename seqs so they are all unique. (Would be nice to keep gene length information)
  
 perl -ane 'if(/^\>gene_\d+/){$a++;print ">PHB.NSI.2017_$a\n"}else{print;}' test.fa
 
