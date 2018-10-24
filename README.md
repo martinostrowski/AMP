@@ -7,15 +7,15 @@ AMP Metagenomic Workflow Description
 
 ### 1. Australian Reference Gene Catalogue (ARGC)
 
-A. non-redundant catalogue of predicted gene sequences (> 200 nt, clustered at 95% nt) identity[clustered alongside the marRef <https://mmp.sfb.uit.no> Database?]
+- A. non-redundant catalogue of predicted gene sequences (> 200 nt, clustered at 95% nt) identity[clustered alongside the marRef <https://mmp.sfb.uit.no> Database?]
 
-B. gene abundance table (c.f. a zOTU table)
+- B. gene abundance table (c.f. a zOTU table)
 
-C. The ARGC can be annotated against any source database
+- C. The ARGC can be annotated against any source database
 
-D. contigs assembled for each discrete sample, with Taxonomic assignment
+- D. contigs assembled for each discrete sample, with Taxonomic assignment
 
-E. Predicted gene sequences and protein sequences (fasta files)
+- E. Predicted gene sequences and protein sequences (fasta files)
 
 #### Tools
 - Trimmomatic
