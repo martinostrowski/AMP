@@ -1,0 +1,124 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook to plot graphic overviews of MyCC-generated bins. The outputs from the MyCC binning process include `MyCluster.coords` and `Cluster.summary` files.
+
+These were modified in a text editor to add column headers `Cluster`, `x`, `y` and `bin`, where appropriate. The following script produces a graphical bin overview with potential to add additional information, such as completeness, contamination and taxonomic lineage.
+
+
+```{r}
+library(svglite)
+library(ggplot)
+library(tidyquant)
+```
+Remove the `*` and add column headers before reading in the cluster coordinates
+```{r}
+bin.coords<-read_tsv("~/MyCluster.coords.sub")
+```
+and preform a basicc plot using manually defined colors (see below)
+```{r}
+ggplot(bin.coords, aes(x=x, y=y, color=as.factor(bin)))+ theme_tq()+ geom_point(alpha=0.4) + scale_color_manual(values = mycol175)
+
+```
+
+import the bin summary information. headers are already present 
+`Cluster          name      bin WholeGenome   N50 NoOfCtg LongestCtgLen AvgLenOfCtg  Cogs`
+
+```{r}
+cl.summary<-read_tsv("~/Cluster.summary")
+```
+
+Some wrangling to combine the summary data with the coordinate of the 'centre' of the cluster
+
+```{r}
+m.cl.summary<-read_tsv("~/yon.cluster.coords.sub")
+cl.summary<- cl.summary %>% separate(Cluster, c("name","bin"), remove=F)
+cl.summary$bin<-as.numeric(cl.summary$bin)
+
+cl.summary<- cl.summary %>% left_join(m.cl.summary, by="bin")
+
+```
+
+And the plot
+
+```{r}
+ggplot(cl.summary)+theme_tq() +
+  geom_point(data=bin.coords, aes(x=x, y=y, color=as.factor(bin), alpha=0.1)) + 
+  geom_point(aes(x=x, y=y, size=WholeGenome, color=as.factor(bin)), alpha=0.2) + 
+    scale_color_manual(values = mycol175, guide=FALSE) +scale_size_continuous(range = c(1, 80), 
+                       breaks = c(20000,500000,100000, 200000, 300000)) +
+ geom_text(aes(x=x, y=y, label=bin), size=5) + scale_color_manual(values = mycol175, guide=FALSE) + labs(title="Yongala Bins Overview")
+ggsave(filename="Yongala_bins_overview2.svg", width=15, height=15)
+```
+***
+
+A rough example to identify taxonomic subsets, such as 'Cyanobacteria'. `yon.cyano.out` was created by searching for 'Cyanobacteria' in the BASTA summaries of blastn versus nt output for each MyCC bin.
+
+
+```{r}
+cyano<-read_tsv("~/Dropbox/yon.cyano.out")
+
+cyano.cl.co <- cyano %>% separate(Cluster, c("c1", "c2", "c3", "c4", "c5", "c6","c7", "c8", "c9","c10", "c11", "c12"), remove=F)
+
+  table(cyano.cl.co$c2) > 30
+
+cyano<-c(12, 120, 113, 17, 19, 2, 21, 29, 35)
+
+cyano.cl.co[cyano,]
+
+cl.summary.cyano<-cl.summary[c(12, 120, 113, 17, 19, 2, 21, 29, 35),]
+
+```
+
+And the draft plot, requires further work to subset the individual contig points rto include only the taxa of interest
+
+```{r}
+ggplot(cl.summary.cyano)+theme_tq() +
+  geom_point(data=bin.coords, aes(x=x, y=y, color=as.factor(bin), alpha=0.1)) + scale_color_manual(values = mycol175, guide=FALSE) +
+  geom_point(aes(x=x, y=y, size=WholeGenome, color=as.factor(bin)), alpha=0.2) + 
+    scale_color_manual(values = mycol175, guide=FALSE) +scale_size_continuous(range = c(1, 80), 
+                       breaks = c(20000,500000,100000, 200000, 300000, 1000000)) +
+ geom_text(aes(x=x, y=y, label=bin), size=5) + scale_color_manual(values = mycol175, guide=FALSE) + labs(title="Yongala Bins Cyano")
+```
+
+***
+
+An example plot with MyCC bins produced from the GAB voyage metagenomes
+
+```{r}
+gab.coords<-read_tsv("~/Dropbox/GAB/MyCluster.coords")
+gab.coords.centres<-read_tsv("~/Dropbox/GAB/GAB.coords.centres.txt")
+```
+
+```{r}
+ggplot(gab.coords, aes(x=x, y=y, color=as.factor(bin)))+ theme_tq()+ geom_point(alpha=0.4) + 
+  scale_color_manual(values = mycol175, guide=F) + 
+  geom_text(data=gab.coords.centres, aes(x=x, y=y, label=bin, color='black'), size=5) + 
+  labs(title="GAB Bins Overview")
+ggsave(filename="GAB_bins_overview2.svg", width=15, height=15)
+
+```
+
+
+
+```{r}
+mycol175<-c("#c70067", "#ac0056", "#ff468e", "#ff7ea3", "#bc0057", "#ff5082", "#ffafbc", "#903047", "#ff899b", "#9b233f", "#ff5f76",
+ "#ffabaf", "#fd325b", "#d50041", "#a76264", "#913238", "#933034", "#ff928d", "#dd1637", "#9a272d", "#eaa199", "#bc0024",
+ "#813f38", "#fa4543", "#952f24", "#db2f26", "#ff9279", "#a11e0e", "#dd3f1e", "#ff8863", "#fbb69d", "#ff7f4d", "#a93300",
+ "#d95105", "#8c390e", "#79452c", "#843f18", "#b75200", "#ffb587", "#ffa464", "#fd891c", "#954e00", "#ffa040", "#bc6a00",
+ "#eebd91", "#ffae4b", "#f99e0a", "#6f4c1b", "#f6bc6d", "#b27800", "#f7bc62", "#6f4c08", "#eabf7e", "#fcbb3b", "#9e7100",
+ "#886c00", "#e6bb00", "#61511b", "#e6c43b", "#756800", "#d6c85e", "#ada300", "#616500", "#c6cd55", "#c5cd68", "#4e5900",
+ "#c3cd79", "#8aa600", "#94bb00", "#b0d33d", "#6c8d00", "#475913", "#a6d54b", "#a6d471", "#5faa00", "#3a5b23", "#a4d386",
+ "#abd196", "#82db61", "#149702", "#007c06", "#009324", "#008229", "#61df78", "#00a544", "#007734", "#00632b", "#00ae61",
+ "#53df8f", "#00673b", "#008a52", "#6adba2", "#009362", "#7dd8ac", "#006c4f", "#00b58e", "#018c70", "#51dcb9", "#00baa0",
+ "#61d9c9", "#02cbb9", "#49dad8", "#01a3a3", "#018688", "#00acbe", "#45d8ef", "#0099b2", "#46d5ff", "#009ccb", "#5ec5ff",
+ "#00638d", "#02a8ee", "#5cbaff", "#006ba0", "#017bc3", "#005b9d", "#0288f2", "#006dc7", "#0056a9", "#36518b", "#0159ba",
+ "#0170e9", "#005ed0", "#8598ff", "#abb2ff", "#0049c1", "#4246ad", "#bfb3eb", "#b7a7ff", "#aa95ff", "#59439b", "#855fe9",
+ "#6833b2", "#604979", "#c28bff", "#bb7eff", "#6b399e", "#dc9bff", "#7d2d9a", "#d36df5", "#e2b8ed", "#e27fff", "#ebb3f8",
+ "#7d318e", "#7a3884", "#f8a2ff", "#b638bd", "#fb7bff", "#feaaf9", "#90178f", "#9c0097", "#7e3777", "#ff84f0", "#8e2283",
+ "#ac009a", "#d233b4", "#ff61d8", "#951a7a", "#ff7cd7", "#ff95db", "#ba0090", "#e030ad", "#951e72", "#ff78cb", "#ff9bd4",
+ "#a36788", "#ff63bb", "#ea289f", "#ffafd4", "#8a3360", "#ff75b5", "#bd0070", "#7f3d58", "#ffa8c8", "#992157")
+```
+
