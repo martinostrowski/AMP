@@ -1,0 +1,92 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook Out lines the processes for coassembly and differential coverage binning of subsets of geographically related metagenomes.
+
+1. coassembly of individual asssemblies usinsg contigs > 2,000 bp 
+2. read mapping using bowtie2 and samtools
+3. 1st binning step [runMetabat.sh](https://bitbucket.org/berkeleylab/metabat)
+4. 2nd step binning [MyCC](https://sourceforge.net/projects/sb2nhri/files/MyCC/). Accurate binning of metagenomic contigs via automated clustering sequences using information of genomic signatures and marker genes [reference](https://www.nature.com/articles/srep24175)
+5. checkM
+6. blastn and BASTA
+
+where possible example scripts, commands and options are given
+
+### Coassemblies
+
+Coassemblies were carried out by combining the contigs > 2000 bp from each individual assembly and coassembling using the Geneious assembler with default settings (although contigs with snps were allowed to merge)
+
+Then raw sequences from each sample were mapped againsst the coassemblies usisng bowtie2
+
+example: eac contigs from IN16v04
+
+```{r}
+bowtie2 -p 12 -x EAC.contigs.2000.coass -1 ../in16v04/35811_1_PE_700bp_MM_UNSW_HM35MBCXY_ACTCGCTA-GAGCCTTA_S6_L002_R1_001.fastq.gz -2 ../in16v04/35811_1_PE_700bp_MM_UNSW_HM35MBCXY_ACTCGCTA-GAGCCTTA_S6_L002_R2_001.fastq.gz -S 35811_1_PE_700bp_MM_UNSW_HM35MBCXY_ACTCGCTA-GAGCCTTA_S6_L002.sam;
+
+
+samtools view -bS 35811_1_PE_700bp_MM_UNSW_HM35MBCXY_ACTCGCTA-GAGCCTTA_S6_L002.sam | samtools sort - 35811_1_PE_700bp_MM_UNSW_HM35MBCXY_ACTCGCTA-GAGCCTTA_S6_L002 ; rm 35811_1_PE_700bp_MM_UNSW_HM35MBCXY_ACTCGCTA-GAGCCTTA_S6_L002.sam;
+
+```
+
+example: GAB contigs 
+
+```{r}
+bowtie2 -p 12 -x GAB.coass.contigs -1 T3-400020151210d0_R1_001.fq.gz -2 T3-400020151210d0_R2_001.fq.gz -S T3-400020151210d0.sam ;
+
+samtools view -bS T3-400020151210d0.sam | samtools sort - T3-400020151210d0 ; rm T3-400020151210d0.sam;
+```
+
+repeating for all paired sequence sets resulted in up to 60 .bam files containing the read-mapping information. These were given as input to the automated MetaBata script `runMetaBat.sh`
+
+
+```{r}
+runMetaBat.sh GAB.coass.contigs.fa T2-120151216d0.sam.sorted.bam T4-40020151208d0.sam.sorted.bam T5-40020151205d0.sam.sorted.bam ....
+```
+
+runMetaBat.sh attempts to produce the best bins without anyparameter optimisation input from the user. This 1st step of binning provides one set of bins for comparison with the next step. The main aim of this step is to produce a depth.covergae.txt file which is produced from `jgi_summarize_bam_contig_depths`. e.g. `jgi_summarize_bam_contig_depths --outputDepth depth.txt *.bam`
+
+
+MyCC generates bins using tetranucleotide frequencies, clusters then using affinity propagation and then corrects them on the basis of sequences harboring marker genes [Lin & Liao, 2016](https://www.nature.com/articles/srep24175).
+
+MyCC was run in a docker container 
+
+```{r}
+MyCC.py YON.contigs.2000.coass.fasta -a YON.contigs.2000.coass.fasta.depth.txt -plot -keep
+```
+
+
+example output
+
+root@5fa8385a979f:/home/20181103_0007_4mer_0.7_cov# ls
+1_Data                    Cluster.108.fasta  Cluster.128.fasta  Cluster.148.fasta  Cluster.168.fasta  Cluster.31.fasta  Cluster.51.fasta  Cluster.71.fasta  Cluster.91.fasta
+2_GetFeature              Cluster.109.fasta  Cluster.129.fasta  Cluster.149.fasta  Cluster.169.fasta  Cluster.32.fasta  Cluster.52.fasta  Cluster.72.fasta  Cluster.92.fasta
+2_GetFeature_4mer         Cluster.11.fasta   Cluster.13.fasta   Cluster.15.fasta   Cluster.17.fasta   Cluster.33.fasta  Cluster.53.fasta  Cluster.73.fasta  Cluster.93.fasta
+3_GetMatrix               Cluster.110.fasta  Cluster.130.fasta  Cluster.150.fasta  Cluster.170.fasta  Cluster.34.fasta  Cluster.54.fasta  Cluster.74.fasta  Cluster.94.fasta
+3_GetMatrix_4mer          Cluster.111.fasta  Cluster.131.fasta  Cluster.151.fasta  Cluster.171.fasta  Cluster.35.fasta  Cluster.55.fasta  Cluster.75.fasta  Cluster.95.fasta
+4_CLR_transformation_SNE  Cluster.112.fasta  Cluster.132.fasta  Cluster.152.fasta  Cluster.172.fasta  Cluster.36.fasta  Cluster.56.fasta  Cluster.76.fasta  Cluster.96.fasta
+5_ClusterCorrection       Cluster.113.fasta  Cluster.133.fasta  Cluster.153.fasta  Cluster.173.fasta  Cluster.37.fasta  Cluster.57.fasta  Cluster.77.fasta  Cluster.97.fasta
+6_ClusterCtg              Cluster.114.fasta  Cluster.134.fasta  Cluster.154.fasta  Cluster.18.fasta   Cluster.38.fasta  Cluster.58.fasta  Cluster.78.fasta  Cluster.98.fasta
+6_ClusterCtg_Alias        Cluster.115.fasta  Cluster.135.fasta  Cluster.155.fasta  Cluster.19.fasta   Cluster.39.fasta  Cluster.59.fasta  Cluster.79.fasta  Cluster.99.fasta
+7_AllClusters             Cluster.116.fasta  Cluster.136.fasta  Cluster.156.fasta  Cluster.2.fasta    Cluster.4.fasta   Cluster.6.fasta   Cluster.8.fasta   Cluster.summary
+7_AllClusters_Alias       Cluster.117.fasta  Cluster.137.fasta  Cluster.157.fasta  Cluster.20.fasta   Cluster.40.fasta  Cluster.60.fasta  Cluster.80.fasta  ClusterCogs.txt
+AP.png                    Cluster.118.fasta  Cluster.138.fasta  Cluster.158.fasta  Cluster.21.fasta   Cluster.41.fasta  Cluster.61.fasta  Cluster.81.fasta  MyCluster.coords
+Cluster.1.fasta           Cluster.119.fasta  Cluster.139.fasta  Cluster.159.fasta  Cluster.22.fasta   Cluster.42.fasta  Cluster.62.fasta  Cluster.82.fasta  MyCluster.pdf
+Cluster.10.fasta          Cluster.12.fasta   Cluster.14.fasta   Cluster.16.fasta   Cluster.23.fasta   Cluster.43.fasta  Cluster.63.fasta  Cluster.83.fasta  log
+Cluster.100.fasta         Cluster.120.fasta  Cluster.140.fasta  Cluster.160.fasta  Cluster.24.fasta   Cluster.44.fasta  Cluster.64.fasta  Cluster.84.fasta
+Cluster.101.fasta         Cluster.121.fasta  Cluster.141.fasta  Cluster.161.fasta  Cluster.25.fasta   Cluster.45.fasta  Cluster.65.fasta  Cluster.85.fasta
+Cluster.102.fasta         Cluster.122.fasta  Cluster.142.fasta  Cluster.162.fasta  Cluster.26.fasta   Cluster.46.fasta  Cluster.66.fasta  Cluster.86.fasta
+Cluster.103.fasta         Cluster.123.fasta  Cluster.143.fasta  Cluster.163.fasta  Cluster.27.fasta   Cluster.47.fasta  Cluster.67.fasta  Cluster.87.fasta
+Cluster.104.fasta         Cluster.124.fasta  Cluster.144.fasta  Cluster.164.fasta  Cluster.28.fasta   Cluster.48.fasta  Cluster.68.fasta  Cluster.88.fasta
+Cluster.105.fasta         Cluster.125.fasta  Cluster.145.fasta  Cluster.165.fasta  Cluster.29.fasta   Cluster.49.fasta  Cluster.69.fasta  Cluster.89.fasta
+Cluster.106.fasta         Cluster.126.fasta  Cluster.146.fasta  Cluster.166.fasta  Cluster.3.fasta    Cluster.5.fasta   Cluster.7.fasta   Cluster.9.fasta
+Cluster.107.fasta         Cluster.127.fasta  Cluster.147.fasta  Cluster.167.fasta  Cluster.30.fasta   Cluster.50.fasta  Cluster.70.fasta  Cluster.90.fasta
+
+***
+
+The taxonomic composition of the resulting bins was screened using checkM, blastn and BASTA, and the result merged into the XXX.bins.summary 
+
+
+
+
