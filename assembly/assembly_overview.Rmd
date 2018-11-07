@@ -1,1 +1,38 @@
-under construction
+
+
+
+1. In order to track groups of related data files through the workflow the filenames were changed to human trackable formats
+
+e.g. MAI20161102d0: 
+
+site | year | month | day | depth
+---------------------------------
+MAI  | 2016 |   11  | 02  |  d0 
+
+2. use TRimmomatic defaults to trim and check for adapters while preserving paired reads
+nb: 4 output files
+
+```{bash}
+java -jar ~/Trimmomatic-0-2.36/trimmomatic-0.36.jar PE MAI20130807d0.R1.fq.gz MAI20130807d0.R2.fq.gz -baseout MAI20130807d0.fq.gz  ILLUMINACLIP:~/Trimmomatic-0-2.36/adapters/NexteraPE-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36;
+```
+add a name prefix to all sequences, e.g. Maybe doesn't need to be done at this step but it would be easier to parse results from the mapping against the reference set of genes, and it can be used for the miTAG approach of TARA oceans.
+
+```{bash}
+cat MAI20130807d0_1P.fq.gz | awk 'NR % 4 == 1 {sub(/^@/,"@MAI20130807d0;")} {print}' | gzip -c > MAI20130807d0_1Pr.fq.gz;
+```
+
+3. Assembly
+
+run either spades or megahit assembler
+
+```{bash}
+cat MAI20130807d0_*U.fq.gz > MAI20130807d0_U.fq.gz
+
+/usr/local/megahit/megahit -1 MAI20130807d0_1P.fq.gz -2 MAI20130807d0_2P.fq.gz -r MAI20130807d0_U.fq.gz -t 4 -o assembly
+```
+
+4. Predict genes on > 500 bp contigs using Metagenemark
+
+```{bash}
+~/MetaGeneMark_linux_64/mgm/gmhmmp -a -d -f G -m ~/MetaGeneMark_linux_64/mgm/MetaGeneMark_v1.mod ss2010_v09.031.0m_101/final.contigs.fa.500.fasta -o ss2010_v09.031.0m_101/ss2010_v09.031.0m_101.gff -D ss2010_v09.031.0m_101/ss2010_v09.031.0m_101.orfs.nt;
+```
