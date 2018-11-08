@@ -1,0 +1,30 @@
+loop to generate a shell script metagenemark prediction of orfs
+
+```{bash}
+for i in *contigs.fa
+do
+name=$(basename $i .final.contigs.fa)
+echo "/usr/local/bioinf/MetaGeneMark_linux_64/mgm/gmhmmp -a -d -f G -m /usr/local/bioinf/MetaGeneMark_linux_64/mgm/MetaGeneMark_v1.mod $name.final.contigs.fa -D $name.contigs.fa.orfs.nt -A $name.contigs.fa.orfs.aa;"
+done > do-mgm.sh
+
+chmod a+x do-mgm.sh
+
+./do-mgm.sh
+```
+
+cluster all predicted orfs to generate a reference set of genes sequences
+```{bash}
+cd-hit-est -c 0.95 -T 12 -M 0 -G 0 -aS 0.9 -g 1 -r 1 -d 0 -i ss2010.v09.orfs.nt -o ss2010.v09.orfs_
+#cd-hit-para.pl -c 0.95 -T 16 -M 0 -G 0 -aS 0.9 -g 1 -r 1 -d 0 --P cd-hit-est --S 32 ***** --Q 8 --T SGE##cluster all predicted orfs to generate a reference set of genes sequences
+```
+
+rename all genes in the clustered dataset
+
+```{bash}
+perl -ane 'if(/^\>gene_\d+/){$a++;print ">PHB.NSI.2017_$a\n"}else{print;}' test.fa
+
+## check gene names are unique
+
+cat ss201X_orfs_2017_v2 | grep '>' | cut -f 1 -d '|' | sort | uniq -c
+```
+Map raw sequences back to generate an abundance profile (). Do env stats on this and worry about annotation later.   
