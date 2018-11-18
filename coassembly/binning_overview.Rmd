@@ -10,7 +10,7 @@ This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook Out lines the pro
 3. 1st binning step [runMetabat.sh](https://bitbucket.org/berkeleylab/metabat)
 4. 2nd step binning [MyCC](https://sourceforge.net/projects/sb2nhri/files/MyCC/). Accurate binning of metagenomic contigs via automated clustering sequences using information of genomic signatures and marker genes [reference](https://www.nature.com/articles/srep24175)
 5. checkM
-6. blastn and BASTA
+6. gtdb-tk <https://github.com/Ecogenomics/GTDBTk>
 
 where possible example scripts, commands and options are given
 
