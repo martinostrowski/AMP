@@ -3,10 +3,10 @@ title: "R Notebook"
 output: html_notebook
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook Out lines the processes for coassembly and differential coverage binning of subsets of geographically related metagenomes.
+This is Notebook outlines the processes for coassembly and differential coverage binning of subsets of geographically related metagenomes.
 
-1. coassembly of individual asssemblies usinsg contigs > 2,000 bp 
-2. read mapping using bowtie2 and samtools
+1. Coassembly of individual asssemblies using contigs > 2,000 bp 
+2. read mapping using bamM <http://ecogenomics.github.io/BamM/>, or bowtie2 and samtools
 3. 1st binning step [runMetabat.sh](https://bitbucket.org/berkeleylab/metabat)
 4. 2nd step binning [MyCC](https://sourceforge.net/projects/sb2nhri/files/MyCC/). Accurate binning of metagenomic contigs via automated clustering sequences using information of genomic signatures and marker genes [reference](https://www.nature.com/articles/srep24175)
 5. checkM
@@ -16,44 +16,40 @@ where possible example scripts, commands and options are given
 
 ### Coassemblies
 
-Coassemblies were carried out by combining the contigs > 2000 bp from each individual assembly and coassembling using the Geneious assembler with default settings (although contigs with snps were allowed to merge)
+Coassemblies were carried out by combining the contigs > 2000 bp from each individual megahit assembly and coassembling using the Geneious assembler with default settings.
 
-Then raw sequences from each sample were mapped againsst the coassemblies usisng bowtie2
+assembled contigs and unused reads were exported from geneious and the coassembled contigs renamed with unique ids.
 
-example: eac contigs from IN16v04
+```{bash}
+perl -ane 'if(/^\>/){$a++;print ">NSI.coass_$a\n"}else{print;}' NSI.2000.coAssembly.fasta > NSI.2000.coAssembly.r.fasta
+```
 
-```{r}
-bowtie2 -p 12 -x EAC.contigs.2000.coass -1 ../in16v04/35811_1_PE_700bp_MM_UNSW_HM35MBCXY_ACTCGCTA-GAGCCTTA_S6_L002_R1_001.fastq.gz -2 ../in16v04/35811_1_PE_700bp_MM_UNSW_HM35MBCXY_ACTCGCTA-GAGCCTTA_S6_L002_R2_001.fastq.gz -S 35811_1_PE_700bp_MM_UNSW_HM35MBCXY_ACTCGCTA-GAGCCTTA_S6_L002.sam;
+Then raw sequences from each sample were mapped against the coassemblies using bamM
+(formerly bowtie2 and samtools)
 
+example: NSI raw sequences mapped against the coassembled contigs from NSI. R1 and R2 are arranged in pairs and the entire set of fastq.gz entered on one line.
 
-samtools view -bS 35811_1_PE_700bp_MM_UNSW_HM35MBCXY_ACTCGCTA-GAGCCTTA_S6_L002.sam | samtools sort - 35811_1_PE_700bp_MM_UNSW_HM35MBCXY_ACTCGCTA-GAGCCTTA_S6_L002 ; rm 35811_1_PE_700bp_MM_UNSW_HM35MBCXY_ACTCGCTA-GAGCCTTA_S6_L002.sam;
+```{bash}
+bamm make -d NSI.2000.coAssembly.r.fasta -c 21940_1_PE_700bp_MM_UNSW_HMJH2BCXX_TCCTGAGC-TCTCTCCG_L001_R1.fastq.gz 21940_1_PE_700bp_MM_UNSW_HMJH2BCXX_TCCTGAGC-TCTCTCCG_L001_R2.fastq.gz ... 35466_1_PE_480bp_MM_AGRF_H7MYTBCX2_AAGAGGCA-TATCCTCT_L002_R1.fastq.gz 35466_1_PE_480bp_MM_AGRF_H7MYTBCX2_AAGAGGCA-TATCCTCT_L002_R2.fastq.gz -t 12
 
 ```
 
-example: GAB contigs 
+This single bamm make generates all of the .bam files containing the read-mapping information. These were given as input to the automated MetaBata script `runMetaBat.sh`
 
-```{r}
-bowtie2 -p 12 -x GAB.coass.contigs -1 T3-400020151210d0_R1_001.fq.gz -2 T3-400020151210d0_R2_001.fq.gz -S T3-400020151210d0.sam ;
 
-samtools view -bS T3-400020151210d0.sam | samtools sort - T3-400020151210d0 ; rm T3-400020151210d0.sam;
+```{bash}
+runMetaBat.sh NSI.2000.coAssembly.r.fasta T2-120151216d0.sam.sorted.bam T4-40020151208d0.sam.sorted.bam T5-40020151205d0.sam.sorted.bam ....
 ```
 
-repeating for all paired sequence sets resulted in up to 60 .bam files containing the read-mapping information. These were given as input to the automated MetaBata script `runMetaBat.sh`
+runMetaBat.sh attempts to produce the best bins without any parameter optimisation input from the user. This 1st step of binning provides one set of bins for comparison with the next step. The main aim of this step is to produce a depth.covergae.txt file which is produced from `jgi_summarize_bam_contig_depths`. e.g. `jgi_summarize_bam_contig_depths --outputDepth depth.txt *.bam`
 
 
-```{r}
-runMetaBat.sh GAB.coass.contigs.fa T2-120151216d0.sam.sorted.bam T4-40020151208d0.sam.sorted.bam T5-40020151205d0.sam.sorted.bam ....
-```
-
-runMetaBat.sh attempts to produce the best bins without anyparameter optimisation input from the user. This 1st step of binning provides one set of bins for comparison with the next step. The main aim of this step is to produce a depth.covergae.txt file which is produced from `jgi_summarize_bam_contig_depths`. e.g. `jgi_summarize_bam_contig_depths --outputDepth depth.txt *.bam`
-
-
-MyCC generates bins using tetranucleotide frequencies, clusters then using affinity propagation and then corrects them on the basis of sequences harboring marker genes [Lin & Liao, 2016](https://www.nature.com/articles/srep24175).
+MyCC generates bins using tetranucleotide frequencies, clusters them using affinity propagation and then corrects them on the basis of sequences harboring marker genes [Lin & Liao, 2016](https://www.nature.com/articles/srep24175).
 
 MyCC was run in a docker container 
 
-```{r}
-MyCC.py YON.contigs.2000.coass.fasta -a YON.contigs.2000.coass.fasta.depth.txt -plot -keep
+```{bash}
+MyCC.py NSI.contigs.2000.coass.fasta -a NSI.contigs.2000.coass.fasta.depth.txt -plot
 ```
 
 
@@ -85,7 +81,17 @@ Cluster.107.fasta         Cluster.127.fasta  Cluster.147.fasta  Cluster.167.fast
 
 ***
 
-The taxonomic composition of the resulting bins was screened using checkM, blastn and BASTA, and the result merged into the XXX.bins.summary 
+The taxonomic composition of the resulting bins was screened using checkM. Bins identified as bacterial or Archaeal were copied to bacterial_bins and analysed using gtdbtk and the result merged into the XXX.bins.summary
+
+```{bash}
+gtdbtk classify_wf --genome_dir ./ --out_dir gtdb.out -x fa
+```
+
+'Clean bins' were defined as > 50% completion and < 10% contamination
+
+***
+
+strategies for binning viruses and identifying eukaryotic bins to follow.
 
 
 
