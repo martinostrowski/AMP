@@ -94,5 +94,16 @@ gtdbtk classify_wf --genome_dir ./ --out_dir gtdb.out -x fa
 strategies for binning viruses and identifying eukaryotic bins to follow.
 
 
+Concoct and meta-wrap bin refining 
 
+```{bash}
+
+concoct --composition_file EAC.contigs.2000.coass.10K.fa --coverage_file coverage_table.tsv -b EAC.concoct/ -t 20
+
+merge_cutup_clustering.py EAC.concoct/clustering_gt1000.csv > EAC.concoct/clustering_merged.csv
+
+extract_fasta_bins.py EAC.contigs.2000.coass.fa EAC.concoct/clustering_merged.csv --output_path EAC.concoct/bins
+
+metawrap bin_refinement -o refined.6 -A EAC.metabat.bins -B EAC.mycc.bins -C EAC.concoct/bins/ -m 128 -t 20
+```
 
