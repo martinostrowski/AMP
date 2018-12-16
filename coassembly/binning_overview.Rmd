@@ -9,8 +9,11 @@ This is Notebook outlines the processes for coassembly and differential coverage
 2. read mapping using bamM <http://ecogenomics.github.io/BamM/>, or bowtie2 and samtools
 3. 1st binning step [runMetabat.sh](https://bitbucket.org/berkeleylab/metabat)
 4. 2nd step binning [MyCC](https://sourceforge.net/projects/sb2nhri/files/MyCC/). Accurate binning of metagenomic contigs via automated clustering sequences using information of genomic signatures and marker genes [reference](https://www.nature.com/articles/srep24175)
-5. checkM
-6. gtdb-tk <https://github.com/Ecogenomics/GTDBTk>
+5. 3rd binning option, CONCOCT
+6. checkM integrated into binning refinement using metawrap
+7. gtdb-tk <https://github.com/Ecogenomics/GTDBTk>
+8. identify viral bins
+9. indentify eukaryote bins
 
 where possible example scripts, commands and options are given
 
@@ -97,6 +100,10 @@ strategies for binning viruses and identifying eukaryotic bins to follow.
 Concoct and meta-wrap bin refining 
 
 ```{bash}
+
+cut_up_fasta.py NSI.2000.coAssembly.r.fasta -c 10000 -o 0 --merge_last -b contigs_10K.bed > NSI.2000.coAssembly.r.contigs_10k.fa
+
+concoct_coverage_table.py contigs_10K.bed bams/*.bam > coverage_table.tsv
 
 concoct --composition_file EAC.contigs.2000.coass.10K.fa --coverage_file coverage_table.tsv -b EAC.concoct/ -t 20
 
